@@ -12,6 +12,7 @@ import { $Enums, Usuario } from '@prisma/client';
 import { AppService } from 'src/app.service';
 import { Prisma2Service } from 'src/prisma2/prisma2.service';
 import { Client, createClient } from 'ldapjs';
+import { RoleGuard } from 'src/auth/guards/role.guard'; 
 
 @Global()
 @Injectable()
@@ -20,6 +21,7 @@ export class UsuariosService {
     private prisma: PrismaService,
     private prisma2: Prisma2Service,
     private app: AppService,
+    private readonly roleGuard: RoleGuard, 
   ) {}
 
   async retornaPermissao(id: string) {
@@ -64,6 +66,13 @@ export class UsuariosService {
   }
 
   async criar(createUsuarioDto: CreateUsuarioDto, criador?: Usuario) {
+    const canActivate = await this.roleGuard.canActivate({
+      getHandler: () => 'criar', 
+    } as any);
+    if (!canActivate) {
+      throw new ForbiddenException('Você não tem permissão para criar usuários.');
+    }
+
     const loguser = await this.buscarPorLogin(createUsuarioDto.login);
     if (loguser) throw new ForbiddenException('Login já cadastrado.');
     const emailuser = await this.buscarPorEmail(createUsuarioDto.email);
@@ -98,6 +107,14 @@ export class UsuariosService {
     permissao?: string,
     unidade_id?: string,
   ) {
+    // Verificação de permissões com RoleGuard
+    const canActivate = await this.roleGuard.canActivate({
+      getHandler: () => 'buscarTudo',
+    } as any);
+    if (!canActivate) {
+      throw new ForbiddenException('Você não tem permissão para buscar usuários.');
+    }
+
     [pagina, limite] = this.app.verificaPagina(pagina, limite);
     const searchParams = {
       ...(busca && {
@@ -131,6 +148,14 @@ export class UsuariosService {
   }
 
   async buscarPorId(id: string) {
+    // Verificação de permissões com RoleGuard
+    const canActivate = await this.roleGuard.canActivate({
+      getHandler: () => 'buscarPorId', 
+    } as any);
+    if (!canActivate) {
+      throw new ForbiddenException('Você não tem permissão para buscar usuário por ID.');
+    }
+
     const usuario = await this.prisma.usuario.findUnique({
       where: { id },
     });
@@ -153,6 +178,14 @@ export class UsuariosService {
     id: string,
     updateUsuarioDto: UpdateUsuarioDto,
   ) {
+    // Verificação de permissões com RoleGuard
+    const canActivate = await this.roleGuard.canActivate({
+      getHandler: () => 'atualizar', 
+    } as any);
+    if (!canActivate) {
+      throw new ForbiddenException('Você não tem permissão para atualizar este usuário.');
+    }
+
     const usuarioLogado = await this.buscarPorId(usuario.id);
     if (
       !usuarioLogado ||
@@ -180,6 +213,14 @@ export class UsuariosService {
   }
 
   async excluir(id: string) {
+    // Verificação de permissões com RoleGuard
+    const canActivate = await this.roleGuard.canActivate({
+      getHandler: () => 'excluir', 
+    } as any);
+    if (!canActivate) {
+      throw new ForbiddenException('Você não tem permissão para excluir usuários.');
+    }
+
     await this.prisma.usuario.update({
       data: { status: 2 },
       where: { id },
@@ -190,6 +231,14 @@ export class UsuariosService {
   }
 
   async autorizaUsuario(id: string) {
+    // Verificação de permissões com RoleGuard
+    const canActivate = await this.roleGuard.canActivate({
+      getHandler: () => 'autorizaUsuario', 
+    } as any);
+    if (!canActivate) {
+      throw new ForbiddenException('Você não tem permissão para autorizar usuários.');
+    }
+
     const autorizado = await this.prisma.usuario.update({
       where: { id },
       data: { status: 1 },
@@ -199,6 +248,14 @@ export class UsuariosService {
   }
 
   async validaUsuario(id: string) {
+    // Verificação de permissões com RoleGuard
+    const canActivate = await this.roleGuard.canActivate({
+      getHandler: () => 'validaUsuario', 
+    } as any);
+    if (!canActivate) {
+      throw new ForbiddenException('Você não tem permissão para validar usuários.');
+    }
+
     const usuario = await this.prisma.usuario.findUnique({ where: { id } });
     if (!usuario) throw new ForbiddenException('Usuário não encontrado.');
     if (usuario.status !== 1) throw new ForbiddenException('Usuário inativo.');
@@ -206,6 +263,14 @@ export class UsuariosService {
   }
 
   async buscarNovo(login: string) {
+    // Verificação de permissões com RoleGuard
+    const canActivate = await this.roleGuard.canActivate({
+      getHandler: () => 'buscarNovo', 
+    } as any);
+    if (!canActivate) {
+      throw new ForbiddenException('Você não tem permissão para buscar novos usuários.');
+    }
+
     const usuarioExiste = await this.buscarPorLogin(login);
     if (usuarioExiste && usuarioExiste.status === 1)
       throw new ForbiddenException('Login já cadastrado.');

@@ -5,7 +5,7 @@ import { UsuariosService } from 'src/usuarios/usuarios.service';
 @Injectable()
 export class RoleGuard implements CanActivate {
   constructor(
-    private reflector: Reflector,
+    private readonly reflector: Reflector,
     private readonly usuariosService: UsuariosService,
   ) {}
 

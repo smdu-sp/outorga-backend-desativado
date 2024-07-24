@@ -17,16 +17,17 @@ import { UsuarioAtual } from 'src/auth/decorators/usuario-atual.decorator';
 import { Usuario } from '@prisma/client';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { RoleGuard } from 'src/auth/guards/role.guard'; 
 
 @ApiTags('usuários')
 @Controller('usuarios') //localhost:3000/usuarios
 export class UsuariosController {
   constructor(private readonly usuariosService: UsuariosService) {}
 
-  @Permissoes('SUP', 'ADM')
   @Post('criar') //localhost:3000/usuarios/criar
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Permissoes('SUP', 'ADM')
   criar(
     @UsuarioAtual() usuario: Usuario,
     @Body() createUsuarioDto: CreateUsuarioDto,
@@ -34,10 +35,10 @@ export class UsuariosController {
     return this.usuariosService.criar(createUsuarioDto, usuario);
   }
 
-  @Permissoes('ADM', 'SUP')
   @Get('buscar-tudo') //localhost:3000/usuarios/buscar-tudo
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Permissoes('ADM', 'SUP')
   buscarTudo(
     @UsuarioAtual() usuario: Usuario,
     @Query('pagina') pagina?: string,
@@ -56,18 +57,18 @@ export class UsuariosController {
     );
   }
 
-  @Permissoes('ADM', 'SUP')
   @Get('buscar-por-id/:id') //localhost:3000/usuarios/buscar-por-id/id
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Permissoes('ADM', 'SUP')
   buscarPorId(@Param('id') id: string) {
     return this.usuariosService.buscarPorId(id);
   }
 
-  @Permissoes('ADM', 'SUP', 'USR')
   @Patch('atualizar/:id') //localhost:3000/usuarios/atualizar/id
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Permissoes('ADM', 'SUP', 'USR')
   atualizar(
     @UsuarioAtual() usuario: Usuario,
     @Param('id') id: string,
@@ -76,26 +77,26 @@ export class UsuariosController {
     return this.usuariosService.atualizar(usuario, id, updateUsuarioDto);
   }
 
-  @Permissoes('ADM', 'SUP', 'DEV')
   @Get('lista-completa') //localhost:3000/usuarios/lista-completa
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Permissoes('ADM', 'SUP', 'DEV')
   listaCompleta() {
     return this.usuariosService.listaCompleta();
   }
 
-  @Permissoes('ADM', 'SUP')
   @Delete('desativar/:id') //localhost:3000/usuarios/excluir/id
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Permissoes('ADM', 'SUP')
   excluir(@Param('id') id: string) {
     return this.usuariosService.excluir(id);
   }
 
-  @Permissoes('ADM', 'SUP')
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
   @Patch('autorizar/:id')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Permissoes('ADM', 'SUP')
   autorizarUsuario(@Param('id') id: string) {
     return this.usuariosService.autorizaUsuario(id);
   }
@@ -107,10 +108,10 @@ export class UsuariosController {
     return this.usuariosService.validaUsuario(usuario.id);
   }
 
-  @Permissoes('ADM', 'SUP')
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
   @Get('buscar-novo')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Permissoes('ADM', 'SUP')
   buscarNovo(@Query('login') login: string) {
     return this.usuariosService.buscarNovo(login);
   }
